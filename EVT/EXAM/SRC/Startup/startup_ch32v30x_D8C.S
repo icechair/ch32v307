@@ -6,7 +6,7 @@
 * Description        : CH32V307x-CH32V305x vector table for eclipse toolchain.
 *********************************************************************************
 * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
-* Attention: This software (modified or not) and binary are used for 
+* Attention: This software (modified or not) and binary are used for
 * microcontroller manufactured by Nanjing Qinheng Microelectronics.
 *******************************************************************************/
 
@@ -324,12 +324,12 @@ DMA2_Channel11_IRQHandler:
 	.weak	handle_reset
 	.align	1
 handle_reset:
-.option push 
-.option	norelax 
+.option push
+.option	norelax
 	la gp, __global_pointer$
-.option	pop 
+.option	pop
 
-	la sp, _eusrstack 
+	la sp, _eusrstack
 
 /* Load data section from flash to RAM */
 	la a0, _data_lma
@@ -358,14 +358,16 @@ handle_reset:
 /* Enable interrupt nesting and hardware stack */
 	li t0, 0x0b
 	csrw 0x804, t0
-/* Enable floating point and global interrupt, configure privileged mode */
-   	li t0, 0x6088           
+/* Enable floating point, global interrupt, stay in machine mode*/
+   	li t0, 0x7888
    	csrw mstatus, t0
 /* Configure the interrupt vector table recognition mode and entry address mode */
  	la t0, _vector_base
-    ori t0, t0, 3           
+    ori t0, t0, 3
 	csrw mtvec, t0
 
+/* call lib c constructors/destructors */
+    call __libc_init_array
     jal  SystemInit
 	la t0, main
 	csrw mepc, t0
